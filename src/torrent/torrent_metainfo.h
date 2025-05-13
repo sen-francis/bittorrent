@@ -1,11 +1,11 @@
-#ifndef TORRENT_FILE
-#define TORRENT_FILE
+#ifndef TORRENT_METAINFO
+#define TORRENT_METAINFO
 	#include <string>
 	#include <list>
 	#include <map>
 	
-	struct TorrentFile {
-		std::map<std::string, any> info;
+	struct TorrentMetainfo {
+		TorrentInfo info;
 		std::string announce;
 		std::list<std::list<std::string>> announceList;
 		int creationDate;
