@@ -3,7 +3,8 @@
 	#include <string>
 	#include <list>
 	#include <map>
-	
+	#include "torrent_info.h"
+
 	struct TorrentMetainfo {
 		TorrentInfo info;
 		std::string announce;
@@ -12,6 +13,6 @@
 		std::string comment;
 		std::string createdBy;
 		std::string encoding;
-	}
+	};
 
 #endif

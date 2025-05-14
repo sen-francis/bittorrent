@@ -4,14 +4,13 @@
 #include <list>
 #include <iostream>
 #include "bencode_util.h"
-#include "de_bencode.h"
 using namespace std;
 
 string encode(string plainText) {
 	return plainText;
 }
 
-unique_ptr<DeBencode> decode(string bencodedText, int &index) {
+any decode(string bencodedText, int &index) {
 	if (bencodedText.empty()) {
 		cerr << "Bencoded text was not initialized or empty.";
 		abort();	
@@ -34,7 +33,7 @@ unique_ptr<DeBencode> decode(string bencodedText, int &index) {
 	abort();	
 }
 
-unique_ptr<DictionaryDeBencode> decodeDictionary(string bencodedText, int &index) {
+map<string, any> decodeDictionary(string bencodedText, int &index) {
 	if (bencodedText.at(index) == 'd') {
 		index++;
 	}
@@ -42,16 +41,17 @@ unique_ptr<DictionaryDeBencode> decodeDictionary(string bencodedText, int &index
 		cerr << "Did not find start char for bencoded dictionary.";
 		abort();
 	}
-	unique_ptr<DictionaryDeBencode> decoded = unique_ptr<DictionaryDeBencode>(new DictionaryDeBencode());
-	while (bencodedText.at(index) != 'e') {
-		unique_ptr<StringDeBencode> propertyName = decodeByteString(bencodedText, index);
-		unique_ptr<DeBencode> propertyValue = decode(bencodedText, index);
-		decoded->dictionary[propertyName->str] = *propertyValue;
+	map<string, any> dictionary;
+	while (index < bencodedText.size() && bencodedText.at(index) != 'e') {
+		string propertyName = decodeByteString(bencodedText, index);
+		any propertyValue = decode(bencodedText, index);
+		dictionary[propertyName] = propertyValue;
 	}
-	return decoded;
+	index++;
+	return dictionary;
 }
 
-unique_ptr<StringDeBencode> decodeByteString(string bencodedText, int &index) {
+string decodeByteString(string bencodedText, int &index) {
 	string bencodedTextLengthStr = "";
 	while (isdigit(bencodedText.at(index))) {
 		if (index >= bencodedText.size()) {
@@ -64,10 +64,10 @@ unique_ptr<StringDeBencode> decodeByteString(string bencodedText, int &index) {
 	int bencodedTextLength = stoi(bencodedTextLengthStr);
 	string propertyName = bencodedText.substr(index+1, bencodedTextLength);
 	index += 1 + bencodedTextLength;
-	return unique_ptr<StringDeBencode>(new StringDeBencode(propertyName));
+	return propertyName;
 }
 
-unique_ptr<ListDeBencode> decodeList(string bencodedText, int &index) {
+list<any> decodeList(string bencodedText, int &index) {
 	if (bencodedText.at(index) == 'l') {
 		index++;
 	}
@@ -75,14 +75,15 @@ unique_ptr<ListDeBencode> decodeList(string bencodedText, int &index) {
 		cerr << "Did not find start char for bencoded list.";
 		abort();
 	}
-	unique_ptr<ListDeBencode> decoded = unique_ptr<ListDeBencode>(new ListDeBencode());
-	while (bencodedText.at(index) != 'e') {
-		decoded->list.push_back(*decode(bencodedText, index));
+	list<any> list;
+	while (index < bencodedText.size() && bencodedText.at(index) != 'e') {
+		list.push_back(decode(bencodedText, index));
 	}
-	return decoded;
+	index++;
+	return list;
 }
 
-unique_ptr<IntegerDeBencode> decodeInteger(string bencodedText, int &index) {
+long long decodeInteger(string bencodedText, int &index) {
 	if (bencodedText.at(index) =='i') {
 		index++;
 	}
@@ -96,5 +97,5 @@ unique_ptr<IntegerDeBencode> decodeInteger(string bencodedText, int &index) {
 		index++;
 	}
 	index++;
-	return unique_ptr<IntegerDeBencode>(new IntegerDeBencode(stoll(numberStr)));
+	return stoll(numberStr);
 }

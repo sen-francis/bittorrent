@@ -1,0 +1,19 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-I./src",
+      "-I./src/bencode",
+      "-I./src/torrent",
+      "-Wall",
+      "-g",
+      "-c",
+      "-o",
+      "build/./src/bencode/de_bencode.cpp.o",
+      "src/bencode/de_bencode.cpp"
+    ],
+    "directory": "/home/sfrancis/dev/bittorrent",
+    "file": "/home/sfrancis/dev/bittorrent/src/bencode/de_bencode.cpp",
+    "output": "/home/sfrancis/dev/bittorrent/build/src/bencode/de_bencode.cpp.o"
+  }
+]

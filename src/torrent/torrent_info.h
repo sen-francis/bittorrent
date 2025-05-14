@@ -2,18 +2,22 @@
 #define TORRENT_INFO
 	#include <string>
 	#include <list>
-	#include <map>
 	
 	enum class TorrentInfoType {SINGLE_FILE, MULTI_FILE};
 
 	struct TorrentInfo {
 		TorrentInfoType type;
-		std::string name;
+		long pieceLength;
+		std::string pieces;
+		bool isPrivate;
 	};
 
 	struct SingleFileTorrentInfo : TorrentInfo {
-		long length;
+		std::string fileName;
+		long fileLength;
 		std::string md5sum;
+		
+		SingleFileTorrentInfo();
 	};
 
 	struct SingleFileInfoForMultiFileTorrentInfo { 
@@ -23,9 +27,10 @@
 	};
 
 	struct	MultiFileTorrentInfo : TorrentInfo {
-		std::list<SingleFileInfoForMultiFileTorrentInfo> fileInfo;
+		std::string directoryName;	
+		std::list<SingleFileInfoForMultiFileTorrentInfo> fileInfoList;
+		
+		MultiFileTorrentInfo();
 	};
-
-
 
 #endif
