@@ -2,11 +2,11 @@
 #define TORRENT_METAINFO
 	#include <string>
 	#include <list>
-	#include <map>
 	#include "torrent_info.h"
 
 	struct TorrentMetainfo {
 		TorrentInfo info;
+		std::string bencodedInfo;
 		std::string announce;
 		std::list<std::list<std::string>> announceList;
 		int creationDate;
