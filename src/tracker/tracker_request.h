@@ -2,7 +2,8 @@
 #define TRACKER_REQUEST
 	#include <string>	
 	#include "tracker_response.h"
-	
+	#include "torrent_metainfo.h"
+
 	enum class TrackerRequestEvent {STARTED, STOPPED, COMPLETE};
 
 	struct TrackerRequest {
@@ -22,6 +23,6 @@
 	
 	std::string generatePeerId();
 
-	TrackerResponse initiateTrackerRequest(TrackerRequest trackerRequest);
+	TrackerResponse initiateTrackerRequest(TorrentMetainfo torrentMetainfo);
 	
 #endif

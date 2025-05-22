@@ -1,3 +1,4 @@
+#include <cpr/parameters.h>
 #include <ctime>
 #include <string>
 #include <string.h>
@@ -6,8 +7,9 @@
 #include "tracker_request.h"
 #include "torrent_metainfo.h"
 #include "tracker_response.h"
+#include "util/uri_encode.h"
 #include <openssl/sha.h>
-
+#include <cpr/cpr.h>
 using namespace std;
 
 const string AZ_CLIENT_PREFIX = "-ZZ0001-";
@@ -16,7 +18,7 @@ string generatePeerId() {
 	srand(time(0));
 	string random = "";
 	for (int i = 0; i < 12; i++) {
-		random += rand() % 10;
+		random += to_string(rand() % 10);
 	}
 	return AZ_CLIENT_PREFIX + random;
 }
@@ -24,7 +26,7 @@ string generatePeerId() {
 string getHashedInfo(string bencodedInfo) {
 	unsigned char hashedInfo[20];
 	unsigned char unhashedInfo[bencodedInfo.size() + 1];
-	copy(bencodedInfo.begin(), bencodedInfo.end(), hashedInfo);	
+	copy(bencodedInfo.begin(), bencodedInfo.end(), unhashedInfo);	
 	SHA1(unhashedInfo, strlen((char *)unhashedInfo), hashedInfo);
 	return string(hashedInfo, hashedInfo + 20);
 }
@@ -49,7 +51,20 @@ TrackerRequest generateTrackerRequest(TorrentMetainfo torrentMetainfo) {
 	return trackerRequest;
 }
 
-TrackerResponse initiateTrackerRequest(TrackerRequest trackerRequest) {
-	cpr::Response response = cpr::Get(cpr::Url{""})
-							 cpr::Parameters{};
+TrackerResponse initiateTrackerRequest(TorrentMetainfo torrentMetainfo) {
+	string infoHash = getHashedInfo(torrentMetainfo.bencodedInfo);
+	string peerId = generatePeerId();
+	cpr::Parameters params = cpr::Parameters{{"info_hash", infoHash},
+		{"peer_id", peerId},
+		{"port", "6888"},
+		{"uploaded", "0"},
+		{"downloaded", "0"},
+		{"left", to_string(getTotalTorrentBytes(torrentMetainfo.info))},
+		{"compact", "1"},
+		{"event", "started"}
+	};
+
+	cpr::Response response = cpr::Get(cpr::Url{torrentMetainfo.announce}, params);	
+	TrackerResponse trackerResponse;
+	return trackerResponse;
 }

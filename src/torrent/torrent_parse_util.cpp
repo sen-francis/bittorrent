@@ -3,6 +3,7 @@
 #include <map>
 #include <any>
 #include <list>
+#include <vector>
 #include "bencode_util.h"
 #include "torrent_info.h"
 #include "torrent_metainfo.h"
@@ -127,7 +128,7 @@ TorrentInfo parseTorrentInfo(map<string, any> infoDictionary) {
 	}
 }
 
-bool isTorrentMetainfoFileValid(map<string, any> dictionary) {
+bool isTorrentMetainfoFileValid(map<string, Bencode> dictionary) {
 	if (dictionary.count("info") == 0) {
 		return false;
 	}
@@ -137,40 +138,20 @@ bool isTorrentMetainfoFileValid(map<string, any> dictionary) {
 	return true;
 }
 
-string bencodeInfoDictionary(map<string, any> infoDictionary) {
-	string bencodedInfo = "d";
-	for (auto const& [key, val] : infoDictionary) {
-		if (key == "files") {
-			list<map<string, any>> files = any_cast<list<map<string, any>>>(val);
-			bencodedInfo += "5:filesl";
-			for (map<string, any> file : files) {
-				bencodedInfo += bencodeInfoDictionary(file);
-			}
-			bencodedInfo += "e";
-
-		}
-		else {
-			// string
-			string value = any_cast<string>(val);
-			bencodedInfo += to_string(value.size()) + ":" + value;
-		}
-	}
-
-	return bencodedInfo + "e";
-
-}
-
 TorrentMetainfo parseTorrentMetainfoFile(std::string fileName) {
-	ifstream file(fileName);
-	string bencodedText;
+	ifstream file(fileName, ios_base::binary);
+	vector<unsigned char> bencodedText(istreambuf_iterator<char>(file), {});
+	/*string bencodedText;
 	string str;
 	while (getline(file, str)) {
 		bencodedText += str;
 	}
+	*/
+
 	file.close();
 
 	int index = 0;
-	map<string, any> dictionary = decodeDictionary(bencodedText, index);
+	map<string, Bencode> dictionary = decodeDictionary(bencodedText, index);
 
 	if (!isTorrentMetainfoFileValid(dictionary)) {
 		cerr << "Torrent metainfo file missing required fields.";
@@ -180,10 +161,13 @@ TorrentMetainfo parseTorrentMetainfoFile(std::string fileName) {
 	TorrentMetainfo torrentMetainfo;
 	map<string, any> infoDictionary = any_cast<map<string, any>>(dictionary.at("info"));
 	torrentMetainfo.info = parseTorrentInfo(infoDictionary);
-	torrentMetainfo.bencodedInfo = bencodeInfoDictionary(infoDictionary);
+	torrentMetainfo.bencodedInfo = encode(infoDictionary);
 	torrentMetainfo.announce = any_cast<string>(dictionary.at("announce"));
 
 	if (dictionary.count("announce-list") > 0) {
+		list<any> tmp = any_cast<list<any>>(dictionary.at("announce-list"));
+		list<list<any>> tmp_1 = any_cast<list<list<any>>>(tmp);
+		list<list<string>> tmp_2 = any_cast<list<list<string>>>(tmp);
 		torrentMetainfo.announceList = any_cast<list<list<string>>>(dictionary.at("announce-list"));
 	}
 	if (dictionary.count("creation date") > 0) {
