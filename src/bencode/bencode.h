@@ -3,27 +3,17 @@
 
 #include <string>
 #include <unordered_map>
-#include <variant>
 #include <list>
-#include <vector>
+#include <boost/variant.hpp>
 
 struct List;
 struct Dictionary;
 
-template <typename T> struct recursive_wrapper {
-	// construct from an existing object
-	recursive_wrapper(T t_) { t.emplace_back(std::move(t_)); }
-	// cast back to wrapped type
-	operator const T &() const { return t.front(); }
-	// store the value
-	std::vector<T> t;
-};
-
-using Value = std::variant<
+using Value = boost::variant<
 std::string, 
 long long, 
-recursive_wrapper<List>, 
-recursive_wrapper<Dictionary>>;
+boost::recursive_wrapper<List>, 
+boost::recursive_wrapper<Dictionary>>;
 using Bencode = Value;
 
 struct List {

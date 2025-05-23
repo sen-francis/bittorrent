@@ -160,7 +160,7 @@ TorrentMetainfo parseTorrentMetainfoFile(std::string fileName) {
 	}
 
 	TorrentMetainfo torrentMetainfo;
-	Dictionary infoDictionary = get<Dictionary>(dictionary.at("info"));
+	Dictionary infoDictionary = boost::get<Dictionary>(dictionary.at("info"));
 	torrentMetainfo.info = parseTorrentInfo(infoDictionary);
 	torrentMetainfo.bencodedInfo = encode(infoDictionary);
 	torrentMetainfo.announce = any_cast<string>(dictionary.at("announce"));

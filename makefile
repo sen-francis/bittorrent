@@ -28,7 +28,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 # These files will have .d instead of .o as the output.
 CPPFLAGS := $(INC_FLAGS) -MMD -MP
 
-LDFLAGS := -lssl -lcrypto -lcpr
+LDFLAGS := -lssl -lcrypto -lcpr -lboost
 
 # The final build step.
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
