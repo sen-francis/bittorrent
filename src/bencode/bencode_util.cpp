@@ -4,8 +4,8 @@
 #include <list>
 #include <iostream>
 #include <vector>
-#include <variant>
 #include "bencode_util.h"
+#include "bencode.h"
 using namespace std;
 
 string encode (any decoded) {
@@ -64,7 +64,7 @@ Bencode decode(vector<unsigned char> bencodedText, int &index) {
 	abort();	
 }
 
-map<string, Bencode> decodeDictionary(vector<unsigned char> bencodedText, int &index) {
+Dictionary decodeDictionary(vector<unsigned char> bencodedText, int &index) {
 	if (bencodedText.at(index) == 'd') {
 		index++;
 	}
@@ -72,14 +72,14 @@ map<string, Bencode> decodeDictionary(vector<unsigned char> bencodedText, int &i
 		cerr << "Did not find start char for bencoded dictionary.";
 		abort();
 	}
-	map<string, Bencode> dictionary;
+	Dictionary dictionary;
 	while (index < bencodedText.size() && bencodedText.at(index) != 'e') {
 		string propertyName = decodeByteString(bencodedText, index);
 		if (propertyName == "pieces") {
 			cout << "hi";
 		}
 		Bencode propertyValue = decode(bencodedText, index);
-		dictionary[propertyName] = propertyValue;
+		dictionary.values[propertyName] = propertyValue;
 	}
 	index++;
 	return dictionary;
@@ -106,7 +106,7 @@ string decodeByteString(vector<unsigned char> bencodedText, int &index) {
 	return propertyName;
 }
 
-list<Bencode> decodeList(vector<unsigned char> bencodedText, int &index) {
+List decodeList(vector<unsigned char> bencodedText, int &index) {
 	if (bencodedText.at(index) == 'l') {
 		index++;
 	}
@@ -114,9 +114,9 @@ list<Bencode> decodeList(vector<unsigned char> bencodedText, int &index) {
 		cerr << "Did not find start char for bencoded list.";
 		abort();
 	}
-	list<Bencode> list;
+	List list;
 	while (index < bencodedText.size() && bencodedText.at(index) != 'e') {
-		list.push_back(decode(bencodedText, index));
+		list.values.push_back(decode(bencodedText, index));
 	}
 	index++;
 	return list;

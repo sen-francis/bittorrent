@@ -3,6 +3,7 @@
 #include <map>
 #include <any>
 #include <list>
+#include <variant>
 #include <vector>
 #include "bencode_util.h"
 #include "torrent_info.h"
@@ -128,11 +129,11 @@ TorrentInfo parseTorrentInfo(map<string, any> infoDictionary) {
 	}
 }
 
-bool isTorrentMetainfoFileValid(map<string, Bencode> dictionary) {
-	if (dictionary.count("info") == 0) {
+bool isTorrentMetainfoFileValid(unordered_map<string, Bencode> dictionary) {
+	if (dictionary.count("info") == 0 || !holds_alternative<Dictionary>(dictionary.at("info"))) {
 		return false;
 	}
-	if (dictionary.count("announce") == 0) {
+	if (dictionary.count("announce") == 0 || !holds_alternative<string>(dictionary.at("announce"))) {
 		return false;
 	}
 	return true;
@@ -151,7 +152,7 @@ TorrentMetainfo parseTorrentMetainfoFile(std::string fileName) {
 	file.close();
 
 	int index = 0;
-	map<string, Bencode> dictionary = decodeDictionary(bencodedText, index);
+	unordered_map<string, Bencode> dictionary = decodeDictionary(bencodedText, index).values;
 
 	if (!isTorrentMetainfoFileValid(dictionary)) {
 		cerr << "Torrent metainfo file missing required fields.";
@@ -159,15 +160,12 @@ TorrentMetainfo parseTorrentMetainfoFile(std::string fileName) {
 	}
 
 	TorrentMetainfo torrentMetainfo;
-	map<string, any> infoDictionary = any_cast<map<string, any>>(dictionary.at("info"));
+	Dictionary infoDictionary = get<Dictionary>(dictionary.at("info"));
 	torrentMetainfo.info = parseTorrentInfo(infoDictionary);
 	torrentMetainfo.bencodedInfo = encode(infoDictionary);
 	torrentMetainfo.announce = any_cast<string>(dictionary.at("announce"));
 
 	if (dictionary.count("announce-list") > 0) {
-		list<any> tmp = any_cast<list<any>>(dictionary.at("announce-list"));
-		list<list<any>> tmp_1 = any_cast<list<list<any>>>(tmp);
-		list<list<string>> tmp_2 = any_cast<list<list<string>>>(tmp);
 		torrentMetainfo.announceList = any_cast<list<list<string>>>(dictionary.at("announce-list"));
 	}
 	if (dictionary.count("creation date") > 0) {
